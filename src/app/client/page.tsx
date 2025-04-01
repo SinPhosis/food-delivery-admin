@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Input } from "@/components/ui/input";
 import ClientHeader from "../_components/client-header";
 import CategoriesMap from "../_components/category";
 
@@ -19,7 +18,7 @@ const Client = () => {
 
   const getCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:900/category");
+      const response = await axios.get("http://localhost:1000/category");
       setCategories(response.data.data);
       console.log(response.data);
     } catch (error) {

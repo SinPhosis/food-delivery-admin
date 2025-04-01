@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { Img } from "../../_components/image";
 
-
 export const VerifyEmail = () => {
   return (
     <div>

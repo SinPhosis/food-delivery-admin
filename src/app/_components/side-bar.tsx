@@ -5,7 +5,7 @@ export const SideBar = () => {
   const router = useRouter();
 
   return (
-    <div className="w-52 h-[1024px] px-5 py-9 bg-white inline-flex flex-col justify-start items-start gap-10 overflow-hidden">
+    <div className="w-52 h-full px-5 py-9 bg-white inline-flex flex-col justify-start items-start gap-10 overflow-hidden">
       <div className="self-stretch inline-flex justify-start items-center gap-2">
         <div className="w-10 h-10 px-1 py-[3px] flex justify-center items-center gap-2.5">
           <img src="../Logo.svg" />

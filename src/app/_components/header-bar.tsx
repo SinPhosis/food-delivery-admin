@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import {
@@ -13,7 +13,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type Category = {
   _id: string | null;
@@ -35,7 +34,7 @@ export const HeaderBar = () => {
 
   const getCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:900/category");
+      const response = await axios.get("http://localhost:1000/category");
       setCategories(response.data.data);
       console.log(response.data);
     } catch (error) {
@@ -49,7 +48,7 @@ export const HeaderBar = () => {
 
   const AddNewCategory = async () => {
     try {
-      await fetch("http://localhost:900/category", {
+      await fetch("http://localhost:1000/category", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +65,7 @@ export const HeaderBar = () => {
   };
 
   return (
-    <div className="w-[1171px] inline-flex flex-col justify-start items-end gap-6">
+    <div className="w-[1171px] h-full inline-flex flex-col justify-start items-end gap-6">
       <div className="inline-flex justify-start items-start gap-2.5">
         <div data-state="Default" className="w-9 h-9 relative rounded-full">
           <div className="w-9 h-9 left-0 top-0 absolute bg-zinc-300 rounded-full" />

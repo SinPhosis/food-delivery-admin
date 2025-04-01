@@ -1,237 +1,126 @@
-"use client";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { ADialog } from "./dialog";
 
-type FoodInfoTypes = {
-  foodName: string | null;
-  ingredients: string | null;
-  price: string | null;
-  image: string | null;
+type categoryData = {
+  categoryName: string | null;
   _id: string | null;
+  foods: Food[] | null;
 };
 
-type event = {
-  target: {
-    value: string;
-  };
+type Food = {
+  _id: string | null;
+  foodName: string | null;
+  price: number | null;
+  image: string;
+  ingredients: string | null;
 };
-
-const NEXT_PUBLIC_CLOUDINARY_API_KEY = "634121889877712";
-const CLOUDINARY_UPLOAD_IMAGE_PRESET = "ml_default";
-const CLOUDINARY_NAME = "dsqof0pnm";
-const API_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/auto/upload`;
 
 export const ProductList = () => {
-  const [imageData, setImageData] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | undefined>();
-  const [imageUrl, setImageUrl] = useState("");
-  const [addFood, setAddFood] = useState<FoodInfoTypes>({
-    foodName: null,
-    ingredients: null,
-    price: null,
-    image: null,
-    _id: null,
-  });
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState<categoryData[]>([]);
+  const [categoryFoods, setCategoryFoods] = useState<{ [key: string]: Food[] }>(
+    {}
+  );
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setImageData(selectedFile);
-
-      const reader = new FileReader();
-      reader.readAsDataURL(selectedFile);
-
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!imageData) return alert("Please select a file");
-
-    const formData = new FormData();
-    formData.append("file", imageData);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_IMAGE_PRESET);
-    formData.append("api_key", NEXT_PUBLIC_CLOUDINARY_API_KEY);
-
+  const getCategories = async () => {
     try {
-      const { data } = await axios.post(API_URL, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log(data);
+      const response = await axios.get(`http://localhost:1000/category`);
+      setCategories(response.data.data);
 
-      if (data.status === "success") {
-        setImageUrl(data.secure_url);
-        setAddFood((prev) => ({
-          ...prev,
-          image: data.secure_url,
-        }));
-      } else {
-        alert("Upload failed: " + data.statusText);
+      if (response.data.data.length > 0) {
+        setCategoryId(response.data.data[0]._id);
       }
     } catch (error) {
-      console.error("Upload failed:", error);
-      alert("Upload failed. Please try again.");
+      console.error("Error fetching categories:", error);
     }
   };
 
-  const createFood = async () => {
+  const getCategoryFoods = async (categoryId: string) => {
     try {
-      await fetch("http://localhost:900/food", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          foodName: addFood.foodName,
-          ingredients: addFood.ingredients,
-          price: addFood.price,
-          image: addFood.image,
-        }),
-      });
-
-      setAddFood({
-        foodName: null,
-        ingredients: null,
-        price: null,
-        image: null,
-        _id: null,
-      });
-      setPreviewImage(undefined);
-      setImageData(null);     
+      const response = await axios.get(
+        `http://localhost:1000/category/${categoryId}`
+      );
+      setCategoryFoods((prevFoods) => ({
+        ...prevFoods,
+        [categoryId]: response.data.data.foods,
+      }));
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching foods for category:", error);
     }
   };
 
-  const onChangeFoodName = (e: event) => {
-    setAddFood((prev) => ({
-      ...prev,
-      foodName: e.target.value,
-    }));
-  };
+  useEffect(() => {
+    getCategories();
+  }, []);
 
-  const onChangeIngredients = (e: event) => {
-    setAddFood((prev) => ({
-      ...prev,
-      ingredients: e.target.value,
-    }));
-  };
-
-  const onChangePrice = (e: event) => {
-    setAddFood((prev) => ({
-      ...prev,
-      price: e.target.value,
-    }));
-  };
+  useEffect(() => {
+    if (categoryId) {
+      getCategoryFoods(categoryId);
+    }
+  }, [categoryId]);
 
   return (
-    <div className="w-[1171px] h-[740px] inline-flex flex-col justify-start items-start gap-5 overflow-hidden absolute left-[220px] top-[250px]">
-      <div className="self-stretch p-5 bg-white rounded-xl inline-flex flex-col justify-start items-start gap-4 overflow-hidden">
-        <div className="inline-flex justify-start items-center gap-2">
-          <div className="justify-start text-xl font-semibold font-['Inter'] leading-7">
-            Appetizers
-          </div>
-        </div>
-        <div className="w-[270px] h-[241px] px-4 py-2 rounded-[20px] border-[1px] border-dashed border-red-500 inline-flex flex-col justify-center items-center gap-6 overflow-hidden relative">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button className="w-[36px] h-[36px] bg-red-500 rounded-full inline-flex justify-start items-center gap-2 relative">
-                <div className="w-4 h-4 relative overflow-hidden left-[9px]">
-                  <img className="w-4 h-4 absolute" src="plus.svg" />
+    <div className="w-[1171px] h-auto inline-flex flex-col justify-start items-start gap-5 overflow-hidden absolute left-[220px] top-[250px]">
+      {categories.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        categories.map((category) => (
+          <div
+            key={category._id}
+            className="w-[1100px] p-5 bg-white rounded-xl flex justify-start items-start gap-4 overflow-hidden"
+          >
+            <div className="inline-flex justify-start items-center gap-2">
+              <div className="justify-start text-xl font-semibold font-['Inter'] leading-7">
+                {category.categoryName}
+              </div>
+            </div>
+            <div className="w-[270px] h-[241px] px-4 py-2 rounded-[20px] border-[1px] border-dashed border-red-500 inline-flex flex-col justify-center items-center gap-6 overflow-hidden relative">
+              <ADialog category={category} />
+              <div className="w-40 text-center justify-start text-text-text-secondary-foreground text-sm font-medium font-['Inter'] leading-tight">
+                Add new Dish to category
+              </div>
+            </div>
+            {categoryFoods[category._id || ""] &&
+            categoryFoods[category._id || ""].length > 0 ? (
+              categoryFoods[category._id || ""].map((food) => (
+                <div
+                  key={food._id}
+                  className="w-[270px] h-[241px] bg-white rounded-[20px] outline flex-col inline-flex items-start gap-5"
+                >
+                  <div className="pt-[7px] rounded-xl inline-flex justify-end items-end overflow-hidden">
+                    <div className="self-stretch px-4 py-2 bg-white rounded-full justify-center items-center gap-2">
+                      <img
+                        src={food.image}
+                        className="w-[258px] h-[129px] relative overflow-hidden rounded-2xl"
+                      />
+                      <button className="w-[40px] h-[40px] left-[220px] top-[420px] absolute rounded-full bg-white">
+                        <img
+                          src="edit-2.svg"
+                          className="absolute bottom-[12px] left-[10px]"
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="pb-[30px] ml-[20px]">
+                    <span className="text-red-500 text-sm font-medium font-['Inter'] leading-tight">
+                      {food.foodName}
+                    </span>
+                    <span className="ml-[50px] text-xs font-normal font-['Inter'] leading-none">
+                      ${food.price}
+                    </span>
+                    <div className="text-xs font-normal font-['Inter'] leading-none">
+                      {food.ingredients}
+                    </div>
+                  </div>
                 </div>
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Add new dish to Appetizers</AlertDialogTitle>
-                <AlertDialogDescription>
-                  <div className="w-[412px] h-[60px] inline-flex justify-start items-start gap-6">
-                    <div>
-                      <p className="text-black pb-[8px]">Food name</p>
-                      <Input
-                        placeholder="Type food name"
-                        onChange={onChangeFoodName}
-                      />
-                    </div>
-                    <div>
-                      <p className="text-black pb-[8px]">Food price</p>
-                      <Input
-                        placeholder="Enter price..."
-                        onChange={onChangePrice}
-                      />
-                    </div>
-                  </div>
-                  <div className="w-[412px] h-[112px] inline-flex flex-col justify-start items-start gap-2 pt-[10px]">
-                    <p className="text-black">Ingredients</p>
-                    <Input
-                      className="h-[90px]"
-                      placeholder="List ingredients..."
-                      onChange={onChangeIngredients}
-                    />
-                  </div>
-                  <div className="w-[412px] h-[160px] inline-flex flex-col justify-start items-start gap-2 pt-[10px]">
-                    <p className="text-black">Food image</p>
-                    <label
-                      htmlFor="file-upload"
-                      className="cursor-pointer w-[412px] h-[138px] p-4 bg-blue-600 bg-opacity-5 rounded-md outline outline-1 outline-offset-[-1px] outline-blue-primary-20 outline-opacity-20 inline-flex flex-col justify-center items-center gap-2 overflow-hidden"
-                    >
-                      {previewImage && <img src={previewImage} width={200} />}
-
-                      <div className="flex flex-col justify-start items-center gap-2">
-                        <div className="p-2 rounded-full inline-flex justify-start items-center gap-2.5">
-                          <div className="w-4 h-4 relative overflow-hidden">
-                            <img
-                              className="w-[16px] h-[16px] absolute outline outline-1 outline-offset-[-0.50px] outline-border-border-foreground"
-                              src="image.svg"
-                              alt="icon"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="self-stretch text-center justify-start text-text-text-primary text-sm font-medium font-['Inter'] leading-tight">
-                          Choose a file or drag & drop it here
-                        </div>
-                      </div>
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      id="file-upload"
-                      className="absolute top-[270px] left-[23px] w-[10px] invisible"
-                      onChange={handleFileChange}
-                    />
-                  </div>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleUpload()}>
-                  Add dish
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <div className="w-40 text-center justify-start text-text-text-secondary-foreground text-sm font-medium font-['Inter'] leading-tight">
-            Add new Dish to Appetizers{" "}
+              ))
+            ) : (
+              <div>No food found for this category</div>
+            )}
           </div>
-        </div>
-      </div>
+        ))
+      )}
     </div>
   );
 };

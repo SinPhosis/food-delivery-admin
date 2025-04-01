@@ -15,10 +15,10 @@ type FormErrors = {
 
 const ForgotPass = () => {
   const router = useRouter();
-    const [formValue, setFormValue] = useState<FromValues>({ email: "" });
-    const [error, setError] = useState<FormErrors>({ email: "" });
+  const [formValue, setFormValue] = useState<FromValues>({ email: "" });
+  const [error, setError] = useState<FormErrors>({ email: "" });
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const handleSubmit = () => {
     let isValid = true;
@@ -39,8 +39,8 @@ const ForgotPass = () => {
       setError((prev) => ({ ...prev, email: "" }));
       isValid = true;
     }
-    if(isValid) {
-    router.push("")
+    if (isValid) {
+      router.push("");
     }
   };
 
@@ -56,7 +56,10 @@ const ForgotPass = () => {
     <div>
       <Img />
       <div className="w-[416px] h-72 absolute top-[246px] left-[100px] flex-col justify-center items-start gap-6 inline-flex">
-        <Button className="w-[36px] h-[36px] bg-white" onClick={() => router.back()}>
+        <Button
+          className="w-[36px] h-[36px] bg-white"
+          onClick={() => router.back()}
+        >
           <ChevronLeft className="text-black w-[16px] h-[16px]" />
         </Button>
         <div className="self-stretch h-[60px] flex-col justify-start items-start gap-1 flex">
@@ -83,7 +86,10 @@ const ForgotPass = () => {
           <div className="text-zinc-500 text-base font-normal font-['Inter'] leading-normal">
             Don't have an account?
           </div>
-          <div className="text-blue-600 text-base font-normal font-['Inter'] leading-normal cursor-pointer" onClick={() => router.push("/")}>
+          <div
+            className="text-blue-600 text-base font-normal font-['Inter'] leading-normal cursor-pointer"
+            onClick={() => router.push("/")}
+          >
             Sign up{" "}
           </div>
         </div>
@@ -91,4 +97,4 @@ const ForgotPass = () => {
     </div>
   );
 };
-export default ForgotPass
+export default ForgotPass;
